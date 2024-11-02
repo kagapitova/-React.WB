@@ -1,58 +1,156 @@
-function convertFromDecimal(value: number, base: number): string {
-    return value.toString(base).toUpperCase();
+// Определим перечисление для статусов заказа
+enum OrderStatus {
+    Pending = "Ожидание",
+    Confirmed = "Подтвержден",
+    Shipped = "Отправлен",
+    Delivered = "Доставлен",
+    Cancelled = "Отменен",
 }
 
-function convertToDecimal(value: string, base: number): number {
-    return parseInt(value, base);
+// Интерфейс товара
+interface IProduct {
+    id: number;
+    name: string;
+    price: number;
 }
 
-type Base = 2 | 10 | 16; // 8-ричную не указали в задании
-
-function calculate(
-    num1: string,
-    num2: string,
-    base: Base,
-    operation: (a: number, b: number) => number
-): string {
-    const decimalNum1 = convertToDecimal(num1, base);
-    const decimalNum2 = convertToDecimal(num2, base);
-    
-    const result = operation(decimalNum1, decimalNum2);
-    
-    return convertFromDecimal(result, base);
+// Класс товара
+class Product implements IProduct {
+    constructor(
+        public id: number,
+        public name: string,
+        public price: number
+    ) {}
 }
 
-const add = (a: number, b: number): number => a + b;
-const subtract = (a: number, b: number): number => a - b;
-const multiply = (a: number, b: number): number => a * b;
-const divide = (a: number, b: number): number => Math.floor(a / b);
+// Класс заказа
+class Order {
+    public products: Product[];
+    public status: OrderStatus;
 
-// Пример с двоичной системой
-const num1Binary = "1010";
-const num2Binary = "1111";
-const baseBinary: Base = 2;
+    constructor(public id: number, products: Product[], public total: number) {
+        this.products = products;
+        this.status = OrderStatus.Pending;
+    }
 
-console.log("Сложение (двоичная):", calculate(num1Binary, num2Binary, baseBinary, add));
-console.log("Вычитание (двоичная):", calculate(num1Binary, num2Binary, baseBinary, subtract));
-console.log("Умножение (двоичная):", calculate(num1Binary, num2Binary, baseBinary, multiply));
-console.log("Деление (двоичная):", calculate(num1Binary, num2Binary, baseBinary, divide));
+    // Изменение статуса заказа
+    changeStatus(newStatus: OrderStatus): void {
+        this.status = newStatus;
+    }
 
-// Пример с десятичной системой
-const num1Decimal = "25";
-const num2Decimal = "10";
-const baseDecimal: Base = 10;
+    // Вывод информации о заказе
+    getOrderInfo(): string {
+        return `ID заказа: ${this.id}, Статус: ${this.status}, Итоговая сумма: ${this.total}`;
+    }
+}
 
-console.log("Сложение (десятичная):", calculate(num1Decimal, num2Decimal, baseDecimal, add));
-console.log("Вычитание (десятичная):", calculate(num1Decimal, num2Decimal, baseDecimal, subtract));
-console.log("Умножение (десятичная):", calculate(num1Decimal, num2Decimal, baseDecimal, multiply));
-console.log("Деление (десятичная):", calculate(num1Decimal, num2Decimal, baseDecimal, divide));
+// Класс корзины
+class Cart {
+    private products: Product[] = [];
 
-// Пример с шестнадцатеричной системой
-const num1Hex = "A";
-const num2Hex = "F";
-const baseHex: Base = 16;
+    // Добавление товара в корзину
+    addProduct(product: Product): void {
+        this.products.push(product);
+    }
 
-console.log("Сложение (шестнадцатеричная):", calculate(num1Hex, num2Hex, baseHex, add));
-console.log("Вычитание (шестнадцатеричная):", calculate(num1Hex, num2Hex, baseHex, subtract));
-console.log("Умножение (шестнадцатеричная):", calculate(num1Hex, num2Hex, baseHex, multiply));
-console.log("Деление (шестнадцатеричная):", calculate(num1Hex, num2Hex, baseHex, divide));
+    // Удаление товара из корзины
+    removeProduct(productId: number): void {
+        this.products = this.products.filter(p => p.id !== productId);
+    }
+
+    // Получение текущего списка товаров в корзине
+    getCartItems(): Product[] {
+        return this.products;
+    }
+
+    // Подсчет общей стоимости товаров в корзине
+    calculateTotal(): number {
+        return this.products.reduce((sum, product) => sum + product.price, 0);
+    }
+
+    // Очистка корзины
+    clearCart(): void {
+        this.products = [];
+    }
+}
+
+// Класс управления товарами
+class ProductManager {
+    private products: Product[] = [];
+
+    // Добавление товара
+    addProduct(product: Product): void {
+        this.products.push(product);
+    }
+
+    // Получение информации о всех товарах
+    getAllProducts(): Product[] {
+        return this.products;
+    }
+
+    // Поиск товара по ID
+    getProductById(productId: number): Product | undefined {
+        return this.products.find(p => p.id === productId);
+    }
+}
+
+// Класс управления заказами
+class OrderManager {
+    private orders: Order[] = [];
+    private orderCounter: number = 1;
+
+    // Добавление нового заказа
+    createOrder(products: Product[], total: number): Order {
+        const newOrder = new Order(this.orderCounter++, products, total);
+        this.orders.push(newOrder);
+        return newOrder;
+    }
+
+    // Получение всех заказов
+    getAllOrders(): Order[] {
+        return this.orders;
+    }
+
+    // Получение заказа по ID
+    getOrderById(orderId: number): Order | undefined {
+        return this.orders.find(order => order.id === orderId);
+    }
+}
+
+// Демонстрация работы системы
+
+// Создание экземпляров менеджеров и корзины
+const productManager = new ProductManager();
+const cart = new Cart();
+const orderManager = new OrderManager();
+
+// Добавляем товары
+const product1 = new Product(1, "Ноутбук", 1500);
+const product2 = new Product(2, "Мышь", 25);
+const product3 = new Product(3, "Клавиатура", 75);
+
+productManager.addProduct(product1);
+productManager.addProduct(product2);
+productManager.addProduct(product3);
+
+// Просмотр товаров в магазине
+console.log("Доступные товары:", productManager.getAllProducts());
+
+// Добавляем товары в корзину
+cart.addProduct(product1);
+cart.addProduct(product2);
+
+// Проверяем содержимое корзины и общую стоимость
+console.log("Товары в корзине:", cart.getCartItems());
+console.log("Общая стоимость корзины:", cart.calculateTotal());
+
+// Создаем заказ на основе содержимого корзины
+const order = orderManager.createOrder(cart.getCartItems(), cart.calculateTotal());
+console.log("Новый заказ:", order.getOrderInfo());
+
+// Изменяем статус заказа
+order.changeStatus(OrderStatus.Confirmed);
+console.log("Обновленный заказ:", order.getOrderInfo());
+
+// Просмотр всех заказов
+console.log("Все заказы:", orderManager.getAllOrders());
