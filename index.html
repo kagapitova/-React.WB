@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager</title>
+</head>
+<body>
+  <h1>Task Manager</h1>
+  
+  <!-- Форма для добавления новой задачи -->
+  <form id="taskForm">
+    <input type="text" id="title" placeholder="Task Title" required>
+    <textarea id="description" placeholder="Task Description" required></textarea>
+    <select id="type">
+      <option value="home">home</option>
+      <option value="work">work</option>
+      <option value="urgent">urgent</option>
+    </select>
+    <button type="submit">Add Task</button>
+  </form>
+
+  <!-- Контейнер для списка задач -->
+  <div id="taskList"></div>
+
+  <!-- Подключение основного файла JavaScript -->
+  <script type="module" src="./dist/index.js"></script>
+</body>
+</html>

@@ -1,7 +1,8 @@
 {
-    "name": "calculator",
+    "name": "TaskManager",
     "version": "1.0.0",
-    "description": "A simple calculator that performs arithmetic operations in decimal, binary, and hexadecimal systems.",
+    "description": "Task manager.",
+    "type": "module",
     "main": "dist/index.js",
     "scripts": {
       "build": "tsc",
