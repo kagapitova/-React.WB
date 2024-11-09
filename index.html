@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Task Manager</title>
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
   <h1>Task Manager</h1>
@@ -13,17 +14,34 @@
     <input type="text" id="title" placeholder="Task Title" required>
     <textarea id="description" placeholder="Task Description" required></textarea>
     <select id="type">
-      <option value="home">home</option>
-      <option value="work">work</option>
-      <option value="urgent">urgent</option>
+      <option value="home">Home</option>
+      <option value="work">Work</option>
+      <option value="urgent">Urgent</option>
     </select>
     <button type="submit">Add Task</button>
   </form>
+
+  <!-- Форма для фильтрации задач -->
+  <div>
+    <h3>Filter Tasks</h3>
+    <select id="filterType">
+      <option value="">All Types</option>
+      <option value="home">Home</option>
+      <option value="work">Work</option>
+      <option value="urgent">Urgent</option>
+    </select>
+    <select id="filterStatus">
+      <option value="">All Statuses</option>
+      <option value="pending">Pending</option>
+      <option value="completed">Completed</option>
+    </select>
+    <button id="applyFilters">Apply Filters</button>
+  </div>
 
   <!-- Контейнер для списка задач -->
   <div id="taskList"></div>
 
   <!-- Подключение основного файла JavaScript -->
-  <script type="module" src="./dist/index.js"></script>
+  <script type="module" src="dist/index.js"></script>
 </body>
 </html>
