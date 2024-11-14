@@ -1,3 +1,18 @@
+export enum ExpenseCategory {
+  Food = "Food",
+  Transport = "Transport",
+  Entertainment = "Entertainment",
+  Others = "Others",
+}
+
+export interface Expense {
+  id: string;
+  amount: number;
+  category: ExpenseCategory;
+  date: Date;
+}
+
+
 export enum TaskStatus {
   Completed = "completed",
   Pending = "pending"

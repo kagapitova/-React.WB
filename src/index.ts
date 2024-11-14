@@ -1,102 +1,97 @@
-// src/index.ts
-import { TaskManager } from "./TaskManager.js";
-import { TaskType, Task, TaskStatus } from "./types.js";
+import { ExpenseManager } from "./ExpenseManager.js";
+import { Expense, ExpenseCategory } from "./types.js";
 
-const taskManager = new TaskManager();
+const expenseManager = new ExpenseManager();
 
-const taskForm = document.getElementById("taskForm") as HTMLFormElement;
-const titleInput = document.getElementById("title") as HTMLInputElement;
-const descriptionInput = document.getElementById("description") as HTMLTextAreaElement;
-const typeSelect = document.getElementById("type") as HTMLSelectElement;
-const taskList = document.getElementById("taskList") as HTMLDivElement;
+const expenseForm = document.getElementById("expenseForm") as HTMLFormElement;
+const amountInput = document.getElementById("amount") as HTMLInputElement;
+const categorySelect = document.getElementById("category") as HTMLSelectElement;
+const dateInput = document.getElementById("date") as HTMLInputElement;
+const expenseList = document.getElementById("expenseList") as HTMLDivElement;
+const filterForm = document.getElementById("filterForm") as HTMLFormElement;
+const startDateInput = document.getElementById("startDate") as HTMLInputElement;
+const endDateInput = document.getElementById("endDate") as HTMLInputElement;
+const totalExpensesOutput = document.getElementById("totalExpenses") as HTMLSpanElement;
+const averageExpensesOutput = document.getElementById("averageExpenses") as HTMLSpanElement;
+const categoryTotalsOutput = document.getElementById("categoryTotals") as HTMLDivElement;
 
-// Функция для отображения списка задач
-function renderTasks() {
-  console.log('renderTasks')
-
-    taskList.innerHTML = "";
-    const tasks = taskManager.getTasks(); // Получаем все задачи
-    console.log("Rendering tasks:", tasks); // Отладка
-
-    tasks.forEach(task => {
-        const taskElement = document.createElement("div");
-        taskElement.className = "task";
-        taskElement.innerHTML = `
-            <h3>${task.title}</h3>
-            <p>${task.description}</p>
-            <p>Type: ${task.type}</p>
-            <p>Status: ${task.status}</p>
-            <button class="edit-task" data-id="${task.id}">Edit</button>
-            <button class="delete-task" data-id="${task.id}">Delete</button>
+// Функция для отображения списка расходов
+function renderExpenses(expenses: Expense[] = expenseManager.getExpenses()) {
+    console.log('expenseManager.getExpenses()', expenseManager.getExpenses());
+    expenseList.innerHTML = "";
+    expenses.forEach(expense => {
+        const expenseElement = document.createElement("div");
+        expenseElement.className = "expense";
+        expenseElement.innerHTML = `
+            <p>Amount: ${expense.amount}</p>
+            <p>Category: ${expense.category}</p>
+            <p>Date: ${expense.date.toLocaleDateString()}</p>
+            <button class="delete-expense" data-id="${expense.id}">Delete</button>
         `;
-        taskList.appendChild(taskElement);
+        expenseList.appendChild(expenseElement);
     });
 
-    // Привязываем обработчики событий к кнопкам редактирования и удаления
-    document.querySelectorAll(".edit-task").forEach(button => {
+    document.querySelectorAll(".delete-expense").forEach(button => {
         button.addEventListener("click", () => {
-            const taskId = (button as HTMLButtonElement).dataset.id!;
-            editTask(taskId);
-        });
-    });
-
-    document.querySelectorAll(".delete-task").forEach(button => {
-        button.addEventListener("click", () => {
-            const taskId = (button as HTMLButtonElement).dataset.id!;
-            deleteTask(taskId);
+            const expenseId = (button as HTMLButtonElement).dataset.id!;
+            deleteExpense(expenseId);
         });
     });
 }
 
-// Добавление новой задачи
-taskForm.addEventListener("submit", (event) => {
+// Добавление нового расхода
+expenseForm.addEventListener("submit", (event) => {
     event.preventDefault();
-    
-    const newTask: Task = {
+
+    const newExpense: Expense = {
         id: Date.now().toString(),
-        title: titleInput.value,
-        description: descriptionInput.value,
-        createdDate: new Date(),
-        status: "pending" as TaskStatus,
-        type: typeSelect.value as TaskType
+        amount: parseFloat(amountInput.value),
+        category: categorySelect.value as ExpenseCategory,
+        date: new Date(dateInput.value)
     };
 
-    taskManager.addTask(newTask);
-    console.log("Task added:", newTask); // Отладка
-    renderTasks();
-    taskForm.reset();
+    expenseManager.addExpense(newExpense);
+    renderExpenses();
+    updateSummary();
+    expenseForm.reset();
 });
 
-// Редактирование задачи
-function editTask(taskId: string) {
-    const task = taskManager.getTasks().find(t => t.id === taskId);
-    if (task) {
-        titleInput.value = task.title;
-        descriptionInput.value = task.description;
-        typeSelect.value = task.type;
-
-        // Сохраняем изменения при повторном сабмите
-        taskForm.onsubmit = (event) => {
-            event.preventDefault();
-            taskManager.editTask(taskId, {
-                title: titleInput.value,
-                description: descriptionInput.value,
-                type: typeSelect.value as TaskType,
-            });
-            console.log("Task edited:", task); // Отладка
-            renderTasks();
-            taskForm.reset();
-            taskForm.onsubmit = null; // Удаляем временный обработчик событий
-        };
-    }
+// Удаление расхода
+function deleteExpense(expenseId: string) {
+    expenseManager.deleteExpense(expenseId);
+    renderExpenses();
+    updateSummary();
 }
 
-// Удаление задачи
-function deleteTask(taskId: string) {
-    taskManager.deleteTask(taskId);
-    console.log("Task deleted:", taskId); // Отладка
-    renderTasks();
+// Фильтрация расходов по дате
+filterForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
+    const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
+
+    const filteredExpenses = expenseManager.filterExpenses(startDate, endDate);
+    renderExpenses(filteredExpenses);
+    updateSummary(filteredExpenses);
+});
+
+// Обновление итогов
+function updateSummary(expenses: Expense[] = expenseManager.getExpenses()) {
+    const total = expenseManager.calculateTotal(expenses);
+    const average = expenseManager.calculateAverage(expenses);
+    const categoryTotals = expenseManager.calculateCategoryTotals(expenses);
+
+    totalExpensesOutput.textContent = total.toFixed(2);
+    averageExpensesOutput.textContent = average.toFixed(2);
+    categoryTotalsOutput.innerHTML = "";
+
+    // Отображение итогов по категориям
+    (Object.keys(categoryTotals) as ExpenseCategory[]).forEach(category => {
+        const categoryElement = document.createElement("p");
+        categoryElement.textContent = `${category}: ${categoryTotals[category].toFixed(2)}`;
+        categoryTotalsOutput.appendChild(categoryElement);
+    });
 }
 
-// Начальное отображение задач
-renderTasks();
+renderExpenses();
+updateSummary();
